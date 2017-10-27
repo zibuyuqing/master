@@ -1,9 +1,8 @@
 package com.lingy.lawei;
 import android.content.Context;
 import android.content.Intent;
-import android.text.TextUtils;
-import com.lingy.lawei.utils.Logger;
 import com.lingy.lawei.utils.StateUtils;
+import com.lingy.lawei.weibo.activity.BatchAtUserActivity;
 import com.lingy.lawei.weibo.activity.SearchActivity;
 import com.lingy.lawei.weibo.activity.SendWeiboActivity;
 import com.lingy.lawei.weibo.activity.UserInfoDisplayActivity;
@@ -43,12 +42,12 @@ public class MainActivity extends BaseActivity {
     @OnClick(R.id.btn_user_info) void displayUserInfo(){
         UserInfoDisplayActivity.displayUserInfo(this,authUser);
     }
+    @OnClick(R.id.btn_to_at_user) void atUser(){
+        BatchAtUserActivity.toBatchAtUser(this,null);
+    }
     @Override
     protected int providedLayoutId() {
         return R.layout.activity_main;
-    }
-    @OnClick(R.id.btn_at_users) void batchAtUsers(){
-
     }
     public void getUserInfo(){
         Oauth2AccessToken token = MyApp.getInstance().getAccessToken();

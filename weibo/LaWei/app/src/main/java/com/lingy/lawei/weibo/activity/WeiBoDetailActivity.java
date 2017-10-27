@@ -96,7 +96,7 @@ public class WeiBoDetailActivity extends BaseActivity {
         builder.show();
     }
     private void batchAtUser(){
-        BatchAtUserActivity.toBatchAtUser(this,mStatus);
+        BatchAtUserActivity.toBatchAtUser(this,mStatus.getIdstr());
     }
     private void normalComment(){
         SendWeiboActivity.toPostComment(this,mStatus.getIdstr());

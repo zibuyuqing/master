@@ -7,14 +7,18 @@ import android.os.Looper;
 
 import com.lingy.lawei.MyApp;
 import com.lingy.lawei.utils.Logger;
+import com.lingy.lawei.utils.StringUtil;
 import com.lingy.lawei.weibo.api.WeiBoApi;
 import com.lingy.lawei.weibo.api.WeiBoFactory;
+import com.lingy.lawei.weibo.bean.Status;
 import com.lingy.lawei.weibo.bean.User;
 import com.lingy.lawei.weibo.bean.UserList;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
@@ -43,12 +47,21 @@ public class BatchCommentManager {
     private String weiBoId;
     private boolean normalComment = true;
     private OnRequestStateChangedListener listener;
+    private List<String> queryStrs = new ArrayList<>();
+    private String currentTag = "";
+    private int currentTagIndex = 0;
     public BatchCommentManager(String weiBoId){
         this.weiBoId = weiBoId;
     }
-    public BatchCommentManager(int requireCount,String weiBoId){
+
+    public void setRequireCount(int requireCount){
         this.requireCount = requireCount;
-        this.weiBoId = weiBoId;
+    }
+    public void setQueryStrings(List<String> queryStrings){
+        this.queryStrs = queryStrings;
+        if(queryStrs.size() > 0){
+            currentTag = queryStrs.get(0);
+        }
     }
     public void normalComment(String comment){
         normalComment = true;
@@ -63,8 +76,10 @@ public class BatchCommentManager {
         page = 1;
         hasMoreUsers = true;
         stop = false;
+        currentTagIndex = 0;
+        currentTag = "";
         if(listener != null){
-            listener.onFinish();
+            listener.commentFinish();
         }
     }
     public void batchComment(String comment){
@@ -90,7 +105,7 @@ public class BatchCommentManager {
                             loadUsers();
                         } else {
                             if(listener != null) {
-                                listener.onFinish();
+                                listener.commentFinish();
                             }
                         }
                     }, BatchCommentManager.this::loadError);
@@ -98,24 +113,22 @@ public class BatchCommentManager {
     }
     private void loadError(Throwable throwable) {
         throwable.printStackTrace();
+        if(listener!=null){
+            listener.onError(throwable);
+        }
     }
     private Map<String,Object> getSendMap(String token, int page){
         Map<String,Object> map = new HashMap<>();
         map.put("access_token", token);
         map.put("count", perCount);
         map.put("page", page);
-        map.put("q", "2");
+        map.put("q", currentTag);
         return map;
     }
     public void batchAtUser(){
         loadUsers();
     }
     private void loadUsers() {
-        if(currentCount > requireCount){
-            stop = true;
-            finishAndReset();
-            return;
-        }
         switch (atUserType){
             case AT_USER_TYPE_BY_TAG:
                 loadUsersByTag();
@@ -130,7 +143,28 @@ public class BatchCommentManager {
 
     }
     private void loadUsersByTag(){
+        String comment = "@haha @hasc @wkkdl @来那个鬼 @第四季度1 @解答 @akldkcl @多看看 @ 据了解司法拘留";
+        if(currentCount > requireCount){
+            if(listener != null){
+                listener.commentFinish();
+            }
+            return;
+        }
+        if(queryStrs.size() > 1) {
+            currentTagIndex = new Random().nextInt(queryStrs.size() - 1);
+            currentTag = queryStrs.get(currentTagIndex);
+        }
+        currentCount += 10;
 
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if(listener != null){
+                    listener.publishProgress(comment,currentTag,currentCount);
+                    loadUsersByTag();
+                }
+            }
+        },2000);
     }
     private void loadFans(){
         weiBoApi.getFollowersById(getRequestMap())
@@ -162,7 +196,22 @@ public class BatchCommentManager {
                 currentCount += size;
                 page++;
                 Logger.logE("batchComment = :" + comment + ",currentCount =:" + currentCount+",page =:" + page);
+                if(currentCount > requireCount){
+                    stop = true;
+                    finishAndReset();
+                    return;
+                }
+                if(listener != null){
+                    listener.publishProgress(comment,currentTag,currentCount);
+                }
                 batchComment(comment);
+            } else {
+                currentTagIndex ++;
+                if(currentTagIndex < queryStrs.size()){
+                    currentTag = queryStrs.get(currentTagIndex);
+                    page = 1;
+                    batchAtUser();
+                }
             }
         }
     }
@@ -187,6 +236,8 @@ public class BatchCommentManager {
         return map;
     }
     public interface OnRequestStateChangedListener {
-        void onFinish();
+        void commentFinish();
+        void publishProgress(String comment,String tag,int currentUserCount);
+        void onError(Throwable throwable);
     }
 }

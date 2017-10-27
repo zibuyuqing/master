@@ -21,8 +21,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
     <Button
-        android:id="@+id/btn_at_users"
-        android:text="批量at用户"
+        android:id="@+id/btn_to_at_user"
+        android:text="at 用户"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 </LinearLayout>

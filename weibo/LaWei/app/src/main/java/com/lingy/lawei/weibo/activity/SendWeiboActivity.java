@@ -315,7 +315,17 @@ public class SendWeiboActivity extends BaseActivity implements BatchCommentManag
         return R.layout.activity_write_weibo;
     }
     @Override
-    public void onFinish() {
+    public void commentFinish() {
         finishAndToast();
+    }
+
+    @Override
+    public void publishProgress(String comment, String tag, int currentUserCount) {
+
+    }
+
+    @Override
+    public void onError(Throwable throwable) {
+        showTips("加载出错");
     }
 }
