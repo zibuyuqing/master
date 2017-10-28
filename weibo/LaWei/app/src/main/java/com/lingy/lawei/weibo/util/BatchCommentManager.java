@@ -129,6 +129,11 @@ public class BatchCommentManager {
         loadUsers();
     }
     private void loadUsers() {
+        if(currentCount > requireCount){
+            stop = true;
+            finishAndReset();
+            return;
+        }
         switch (atUserType){
             case AT_USER_TYPE_BY_TAG:
                 loadUsersByTag();
@@ -196,11 +201,6 @@ public class BatchCommentManager {
                 currentCount += size;
                 page++;
                 Logger.logE("batchComment = :" + comment + ",currentCount =:" + currentCount+",page =:" + page);
-                if(currentCount > requireCount){
-                    stop = true;
-                    finishAndReset();
-                    return;
-                }
                 if(listener != null){
                     listener.publishProgress(comment,currentTag,currentCount);
                 }
