@@ -1,4 +1,4 @@
-package com.zibuyuqing.roundcorner;
+package com.zibuyuqing.roundcorner.widget;
 
 import android.content.Context;
 import android.graphics.Canvas;
@@ -10,17 +10,23 @@ import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.RelativeLayout;
+
+import com.zibuyuqing.roundcorner.R;
 
 /**
  * Created by Xijun.Wang on 2017/10/28.
  */
 
 public class CornerView extends View {
+    public static final int DEFAULT_OPACITY = 255;
     private Context context;
     private Paint paint;
     private Path path;
     private int location = 0;
     private int cornerSize = 0;
+    private int opacity = 0;
+
     public CornerView(Context context) {
         this(context, null);
     }
@@ -104,5 +110,20 @@ public class CornerView extends View {
         this.location = location;
         invalidate();
     }
-
+    public void setCornerSize(int size){
+        this.cornerSize = size;
+        requestLayout();
+        invalidate();
+    }
+    public void setCornerOpacity(int opacity){
+        this.opacity = opacity;
+        this.paint.setAlpha(opacity);
+        invalidate();
+    }
+    public void hide(){
+        setVisibility(GONE);
+    }
+    public void show(){
+        setVisibility(VISIBLE);
+    }
 }
